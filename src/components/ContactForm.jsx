@@ -1,13 +1,20 @@
 /* eslint-disable react/prop-types */
-import { Formik } from 'formik';
+import { Formik, Field, Form, ErrorMessage } from 'formik';
 import {useState} from 'react'
 import { Modal, Button } from 'react-bootstrap'
+import * as Yup from 'yup';
 
 function ContactForm({onAdd}) {
 
 const [show, setShow] = useState(false);
 const handleClose = () => setShow(false);
 const handleShow = () => setShow(true);
+
+const validationSchema = Yup.object({
+    name: Yup.string().min(3, 'Lütfen Minimum 3 Karakter Girin').max(50, 'Lütfen 3-50 arasında Karakter Girin').required('Lütfen Alanı Doldurun'),
+    number: Yup.string().min(3, 'Lütfen Minimum 3 Hane Girin').max(50, 'Lütfen 3-50 arasında Sayı Girin').required('Lütfen Alanı Doldurun')
+  });
+
 
 return (
 <div>
@@ -20,71 +27,48 @@ return (
 
             <Modal.Body>
                 
-                <Formik 
-                    initialValues={{ name: '', number: '' }}
-                    validate={values => {
-                        const errors = {};
-                        if (!values.name) {
-                            errors.name = 'Lütfen Alanı Doldurun';
-                        }
-                        if (!values.number) {
-                            errors.number = 'Lütfen Alanı Doldurun';
-                        }
-                        return errors;
-                    }}
-                    onSubmit={(values, { setSubmitting, resetForm}) => {
-                            
-                            resetForm();
-                            const newTask = {
-                                id: Date.now(),
-                                name: values.name,
-                                number: values.number
-                              };
-                              onAdd(newTask);
-                              console.log(values);
-                              values.push(newTask); // Yeni görevi diziye ekle
-                              setSubmitting(false);
-                              resetForm();
-                    }}>
-                    {({
-                        values,
-                        errors,
-                        touched,
-                        handleChange,
-                        handleBlur,
-                        handleSubmit,
-                        isSubmitting,
-                    }) => (
-                        <form onSubmit={handleSubmit} style={{
-                                display: 'flex', 
-                                flexDirection: 'column', 
-                                gap: '20px'}} >
-                            <input
-                                style={{padding: "5px 10px"}}
-                                type='text'
-                                name='name'
-                                placeholder='İsmi Girin'
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                value={values.name}
-                            />
-                            {errors.name && touched.name && errors.name}
-                            <input
-                                style={{padding: "5px 10px"}}
-                                type='number'
-                                name='number'
-                                placeholder='Numarayı Girin'
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                value={values.number}
-                            />
-                            {errors.number && touched.number && errors.number}
-                            <button className='btn btn-primary' type='submit' disabled={isSubmitting}>
-                                Ekle
-                            </button>
-                        </form>
-                    )}
-                    </Formik>
+            <Formik
+              initialValues={{ name: '', number: '' }}
+              validationSchema={validationSchema}
+              onSubmit={(values, { setSubmitting, resetForm }) => {
+                const newTask = {
+                  id: Date.now(),
+                  name: values.name,
+                  number: values.number
+                };
+                onAdd(newTask);
+                console.log(values);
+                setSubmitting(false);
+                resetForm();
+                handleClose();
+              }}
+            >
+              {({ isSubmitting }) => (
+                <Form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <Field
+                      style={{ padding: "5px 10px" }}
+                      type='text'
+                      name='name'
+                      placeholder='İsmi Girin'
+                    />
+                    <ErrorMessage name='name' component='div' style={{ color: 'red' }} />
+                  </div>
+                  <div>
+                    <Field
+                      style={{ padding: "5px 10px" }}
+                      type='text'
+                      name='number'
+                      placeholder='Numarayı Girin'
+                    />
+                    <ErrorMessage name='number' component='div' style={{ color: 'red' }} />
+                  </div>
+                  <button className='btn btn-primary' type='submit' disabled={isSubmitting}>
+                    Ekle
+                  </button>
+                </Form>
+              )}
+            </Formik>
             </Modal.Body>
 
             <Modal.Footer> 
